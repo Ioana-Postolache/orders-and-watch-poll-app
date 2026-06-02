@@ -1,0 +1,15 @@
+# Generated proto stubs — rebuilt from source
+frontend/src/proto/
+
+# Build outputs
+backend/build/
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Visual brainstorm sessions
+.superpowers/
