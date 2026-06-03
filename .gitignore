@@ -15,3 +15,7 @@ frontend/dist/
 .superpowers/
 
 /node_modules
+
+# Gradle
+backend/build/
+backend/.gradle/
