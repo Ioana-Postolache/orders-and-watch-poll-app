@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package poll;
+
+option java_package = "com.pollapp.proto";
+option java_outer_classname = "PollProto";
+option java_multiple_files = true;
+
+service PollService {
+  // CreatePoll    — unary, host creates a poll
+  rpc CreatePoll(CreatePollRequest) returns (CreatePollResponse);
+
+  // JoinPoll      — unary, voter resolves a room code into poll details
+  rpc JoinPoll(JoinPollRequest) returns (JoinPollResponse);
+
+  // CastVote      — unary, voter submits/changes their vote
+  rpc CastVote(CastVoteRequest) returns (CastVoteResponse);
+
+  // ClosePoll     — unary, host closes the poll
+  rpc ClosePoll(ClosePollRequest) returns (ClosePollResponse);
+
+  // StreamResults — server-streaming, clients receive live TallyUpdate messages
+  rpc StreamResults(StreamResultsRequest) returns (TallyUpdate);
+}
+
+
+message CreatePollRequest {
+  string question = 1;
+  repeated string options = 2;
+}
+
+message CreatePollResponse {
+  string poll_id = 1;
+  string room_code = 2;
+}
+
+message JoinPollRequest {
+  string room_code = 1;
+}
+
+message JoinPollResponse {
+  string poll_id = 1;
+  string question = 2;
+  repeated string options = 3;
+  bool found_poll = 4;
+}
+
+message CastVoteRequest {
+  string poll_id = 1;
+  string option = 2;
+  string voter_id = 3;
+}
+
+message CastVoteResponse {
+  bool accepted = 1;
+}
+
+message ClosePollRequest {
+  string poll_id = 1;
+}
+
+
+message ClosePollResponse {
+  bool closed = 1;
+}
+
+message StreamResultsRequest {
+  string poll_id = 1;
+}
+
+
+message TallyUpdate{
+ map<string, int32> counts = 1;
+ bool poll_closed = 2;
+}        

@@ -13,3 +13,5 @@ frontend/dist/
 
 # Visual brainstorm sessions
 .superpowers/
+
+/node_modules
