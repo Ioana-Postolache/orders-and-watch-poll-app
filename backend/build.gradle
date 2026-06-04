@@ -23,6 +23,7 @@ dependencies {
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
     compileOnly     'org.apache.tomcat:annotations-api:6.0.53'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
