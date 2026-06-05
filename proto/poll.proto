@@ -20,7 +20,7 @@ service PollService {
   rpc ClosePoll(ClosePollRequest) returns (ClosePollResponse);
 
   // StreamResults — server-streaming, clients receive live TallyUpdate messages
-  rpc StreamResults(StreamResultsRequest) returns (TallyUpdate);
+  rpc StreamResults(StreamResultsRequest) returns (stream TallyUpdate);
 }
 
 

@@ -10,13 +10,14 @@ import com.pollapp.proto.CastVoteResponse;
 import com.pollapp.proto.CreatePollRequest;
 import com.pollapp.proto.CreatePollResponse;
 import com.pollapp.proto.PollServiceGrpc;
+import com.pollapp.proto.TallyUpdate;
 import com.pollapp.state.PollStore;
 
 import io.grpc.stub.StreamObserver;
-
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class PollGrpcService extends PollServiceGrpc.PollServiceImplBase {
     private final Random random = new Random();
 
     private static final Logger logger = LoggerFactory.getLogger(PollGrpcService.class);
+    private final CopyOnWriteArrayList<StreamObserver<TallyUpdate>> observers = new CopyOnWriteArrayList<>();
 
     public PollGrpcService(PollStore pollStore, VoteProducer voteProducer) {
         this.pollStore = pollStore;
@@ -92,6 +94,40 @@ public class PollGrpcService extends PollServiceGrpc.PollServiceImplBase {
     }
 
     public void broadcastTallies(Map<String, Integer> tallies) {
-        // implement in Task 11
+        TallyUpdate update = TallyUpdate.newBuilder()
+                .putAllCounts(tallies)
+                .setPollClosed(
+                        false)
+                .build();
+
+        for (StreamObserver<TallyUpdate> observer : observers) {
+            try {
+                observer.onNext(update);
+            } catch (io.grpc.StatusRuntimeException e) {
+                observers.remove(observer);
+            }
+        }
+    }
+
+    @Override
+    public void streamResults(
+            com.pollapp.proto.StreamResultsRequest request,
+            io.grpc.stub.StreamObserver<com.pollapp.proto.TallyUpdate> responseObserver) {
+
+        Map<String, Integer> tallies = pollStore.computeTallies();
+        Poll activePoll = pollStore.getActivePoll();
+        boolean isPollAlreadyClosed = activePoll != null && activePoll.getStatus() == PollStatus.CLOSED;
+        TallyUpdate snapshot = TallyUpdate.newBuilder()
+                .putAllCounts(tallies)
+                .setPollClosed(
+                        isPollAlreadyClosed)
+                .build();
+        responseObserver.onNext(snapshot);
+
+        if (isPollAlreadyClosed) {
+            responseObserver.onCompleted();
+            return;
+        }
+        observers.add(responseObserver);
     }
 }
