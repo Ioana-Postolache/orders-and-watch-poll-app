@@ -14,9 +14,12 @@ import com.pollapp.state.PollStore;
 
 import io.grpc.stub.StreamObserver;
 
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.KafkaException;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +29,7 @@ public class PollGrpcService extends PollServiceGrpc.PollServiceImplBase {
     private final VoteProducer voteProducer;
     private final Random random = new Random();
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PollGrpcService.class);
+    private static final Logger logger = LoggerFactory.getLogger(PollGrpcService.class);
 
     public PollGrpcService(PollStore pollStore, VoteProducer voteProducer) {
         this.pollStore = pollStore;
@@ -65,9 +68,7 @@ public class PollGrpcService extends PollServiceGrpc.PollServiceImplBase {
 
         Poll activePoll = pollStore.getActivePoll();
 
-        if (activePoll == null
-                || activePoll.getStatus() == PollStatus.CLOSED) {
-
+        if (activePoll == null) {
             response = CastVoteResponse.newBuilder().setAccepted(false).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -84,9 +85,13 @@ public class PollGrpcService extends PollServiceGrpc.PollServiceImplBase {
             responseObserver.onNext(CastVoteResponse.newBuilder().setAccepted(false).build());
             responseObserver.onCompleted();
             return;
-        } 
+        }
         response = CastVoteResponse.newBuilder().setAccepted(true).build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    public void broadcastTallies(Map<String, Integer> tallies) {
+        // implement in Task 11
     }
 }
